@@ -1,7 +1,7 @@
 langchain
 pypdf2
 streamlit
-python dot-env
+python-dotenv
 faiss-cpu
 openai
 huggingface_hub
