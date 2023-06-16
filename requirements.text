@@ -1,0 +1,7 @@
+langchain
+pypdf2
+streamlit
+python dot-env
+faiss-cpu
+openai
+huggingface_hub
