@@ -10,11 +10,30 @@ from html_components import css,bot_template,user_template
 from langchain.chat_models import ChatOpenAI
 
 def get_conversastion_chain(vectorstore):
+    """
+    Initializes a conversational retrieval chain from a given vectorstore. The chain first uses a ChatOpenAI model to generate
+    responses and then retrieves appropriate responses from a vectorstore. The memory parameter specifies the conversation
+    buffer memory to use for storing chat history. Returns the initialized conversational retrieval chain.
+    
+    :param vectorstore: A vectorstore containing the knowledge base for the retrieval chain.
+    :type vectorstore: VectorStore
+    :return: A conversational retrieval chain initialized with the given vectorstore and memory.
+    :rtype: ConversationalRetrievalChain
+    """
     llm=ChatOpenAI()
     memory=ConversationBufferMemory(memory_key="chat_history",return_messages=True)
     conversastion_chain=ConversationalRetrievalChain.from_llm(llm=llm, retriever=vectorstore.as_retriever(),memory=memory)
     return conversastion_chain
 def get_vector_store(text_chunks):
+    """
+    Returns a vector store for the given text chunks.
+    
+    Args:
+        text_chunks (list): A list of text chunks to be used for creating the vector store.
+        
+    Returns:
+        vector_store (FAISS): A FAISS object representing the vector store generated from the given text chunks.
+    """
     # embeddings=HuggingFaceInstructEmbeddings(model_name="hkunlp/instructor-xl")
     embeddings=OpenAIEmbeddings(model= "text-embedding-ada-002")
     vector_store=FAISS.from_texts(texts=text_chunks,embedding=embeddings)
@@ -56,6 +75,15 @@ def get_pdf_text(pdf_docs):
 
 
 def handle_user_question(user_question):
+    """
+    Handles a user question by passing it to the chatbot and displaying the response. 
+
+    Args:
+    - user_question (str): The question asked by the user. 
+
+    Returns:
+    - the response from the chatbot.
+    """
     response=st.session_state.conversastion({'question':user_question})
     st.session_state.chat_history=response['chat_history']
     for i , message in enumerate(st.session_state.chat_history):
@@ -64,6 +92,17 @@ def handle_user_question(user_question):
         else:
             st.write(bot_template.replace("{{MSG}}",message.content),unsafe_allow_html=True)
 def main():
+    """
+    This function is the main entry point for the chat-PDF application.
+    It loads the environment variables, sets the page configuration, and 
+    initializes the conversation and chat history in the session state.
+    Then it prompts the user for a question based on the PDF
+    and handles the user's question by calling the 'handle_user_question' function.
+    The function also creates a file uploader in the sidebar for the user to upload their PDF files 
+    and a 'submit' button to start the processing. Once the user submits their PDF files, the function gets the raw text from the PDF files,
+    creates text chunks, and generates a vector store.
+    Finally, the function stores the conversation chain in the session state and returns nothing.
+    """
 
     load_dotenv()
     
